@@ -5,6 +5,8 @@
         android:id="@+id/native_ad_view"
         android:layout_width="match_parent"
         android:layout_height="120dp"
+        android:layout_marginRight="@dimen/small_ad_margin"
+        android:layout_marginLeft="@dimen/small_ad_margin"
         android:layout_centerInParent="true"
         android:background="@drawable/gnt_rounded_corners_shape"
         >
@@ -65,18 +67,19 @@
                     android:textColor="@color/blue_cyan"
                     android:textSize="@dimen/gnt_text_size_small" />
             </LinearLayout>
+
             <Button
                 android:id="@+id/cta"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/icon"
+                android:layout_alignParentBottom="true"
                 android:layout_marginLeft="10dp"
                 android:layout_marginTop="5dp"
                 android:layout_marginRight="10dp"
                 android:layout_marginBottom="5dp"
                 android:background="@drawable/button9"
                 android:lines="1"
-                android:layout_alignParentBottom="true"
                 android:textColor="@color/gnt_white" />
             <RelativeLayout
                 android:layout_width="wrap_content"
@@ -88,7 +91,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_margin="2dp"
-                    android:text="Ad"
+                    android:text="@string/indicatortxt"
                     android:textColor="@color/gnt_white"
                     android:textSize="10sp"
                     android:textStyle="bold"

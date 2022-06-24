@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 
 import com.puspanand.admob_advanced_native_recyvlerview.AdmobNativeAdAdapter;
+import com.ramadhanhadiatma.admobadvancednativerecycler.R;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -9,6 +9,8 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.ramadhanhadiatma.admobadvancednativerecycler.R;
+
 import java.util.List;
 
 public class ContactsAdapter extends

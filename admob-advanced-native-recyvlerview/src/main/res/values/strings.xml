@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Admob-Advanced-Native-RecyvlerView</string>
+    <string name="indicatortxt">Ad</string>
 </resources>
