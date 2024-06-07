@@ -22,9 +22,6 @@ import com.puspanand.nativetemplates.NativeTemplateStyle;
 import com.puspanand.nativetemplates.TemplateView;
 import com.puspanand.rvadapter.RecyclerViewAdapterWrapper;
 
-/**
- * Created by thuanle on 2/12/17.
- */
 public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
 
     private static final int TYPE_FB_NATIVE_ADS = 900;
@@ -42,7 +39,6 @@ public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
 
     private void assertConfig() {
         if (mParam.gridLayoutManager != null) {
-            //if user set span ads
             int nCol = mParam.gridLayoutManager.getSpanCount();
             if (mParam.adItemInterval % nCol != 0) {
                 throw new IllegalArgumentException(String.format("The adItemInterval (%d) is not divisible by number of columns in GridLayoutManager (%d)", mParam.adItemInterval, nCol));
@@ -51,7 +47,6 @@ public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
     }
 
     private int convertAdPosition2OrgPosition(int position) {
-
         return position - (position + 1) / (mParam.adItemInterval + 1);
     }
 
@@ -70,61 +65,49 @@ public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
     }
 
     private boolean isAdPosition(int position) {
-        /*if(position==1|| position==4)return true;*/
         return (position + 1) % (mParam.adItemInterval + 1) == 0;
-    }
-
-    public static final boolean isValidPhoneNumber(CharSequence target) {
-        if (target.length() != 10) {
-            return false;
-        } else {
-            return android.util.Patterns.PHONE.matcher(target).matches();
-        }
     }
 
     private void onBindAdViewHolder(final RecyclerView.ViewHolder holder) {
         final AdViewHolder adHolder = (AdViewHolder) holder;
         if (mParam.forceReloadAdOnBind || !adHolder.loaded) {
             AdLoader adLoader = new AdLoader.Builder(adHolder.getContext(), mParam.admobNativeId).forNativeAd(nativeAd -> {
+                Log.e("admobnative", "loaded");
+                NativeTemplateStyle.Builder builder = new NativeTemplateStyle.Builder();
+                builder.withPrimaryTextSize(11f);
+                builder.withSecondaryTextSize(10f);
+                builder.withTertiaryTextSize(06f);
+                builder.withCallToActionTextSize(11f);
 
-                        Log.e("admobnative", "loaded");
-                        NativeTemplateStyle.Builder builder = new NativeTemplateStyle.Builder();
-                        builder.withPrimaryTextSize(11f);
-                        builder.withSecondaryTextSize(10f);
-                        builder.withTertiaryTextSize(06f);
-                        builder.withCallToActionTextSize(11f);
+                if (mParam.layout == 0) {
+                    adHolder.templatesmall.setVisibility(View.VISIBLE);
+                    adHolder.templatesmall.setStyles(builder.build());
+                    adHolder.templatesmall.setNativeAd(nativeAd);
+                } else if (mParam.layout == 1) {
+                    adHolder.templatemedium.setVisibility(View.VISIBLE);
+                    adHolder.templatemedium.setStyles(builder.build());
+                    adHolder.templatemedium.setNativeAd(nativeAd);
+                } else {
+                    adHolder.templatecustom.setVisibility(View.VISIBLE);
+                    adHolder.templatecustom.setStyles(builder.build());
+                    adHolder.templatecustom.setNativeAd(nativeAd);
+                }
 
+                adHolder.loaded = true;
+                adHolder.progressBar.setVisibility(View.GONE); // Hide progress bar on successful ad load
 
-                        if (mParam.layout == 0) {
-                            adHolder.templatesmall.setVisibility(View.VISIBLE);
-                            adHolder.templatesmall.setStyles(builder.build());
-                            adHolder.templatesmall.setNativeAd(nativeAd);
-                        } else if (mParam.layout == 1) {
-                            adHolder.templatemedium.setVisibility(View.VISIBLE);
-                            adHolder.templatemedium.setStyles(builder.build());
-                            adHolder.templatemedium.setNativeAd(nativeAd);
-                        } else {
-                            adHolder.templatecustom.setVisibility(View.VISIBLE);
-                            adHolder.templatecustom.setStyles(builder.build());
-                            adHolder.templatecustom.setNativeAd(nativeAd);
-                        }
-
-                        adHolder.loaded = true;
-
-                    })
+            })
                     .withAdListener(new AdListener() {
                         @Override
                         public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                             super.onAdFailedToLoad(loadAdError);
                             Log.e("admobnative", "error:" + loadAdError.getMessage());
                             adHolder.adContainer.setVisibility(View.GONE);
+                            adHolder.progressBar.setVisibility(View.GONE); // Hide progress bar on ad load failure
                             // Handle the failure by logging, altering the UI, and so on.
                         }
-
                     })
                     .withNativeAdOptions(new NativeAdOptions.Builder()
-                            // Methods in the NativeAdOptions.Builder class can be
-                            // used here to specify individual options settings.
                             .build())
                     .build();
             adLoader.loadAd(new AdRequest.Builder().build());
@@ -142,12 +125,10 @@ public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
 
     private RecyclerView.ViewHolder onCreateAdViewHolder(ViewGroup parent) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        View adLayoutOutline = inflater
-                .inflate(mParam.itemContainerLayoutRes, parent, false);
+        View adLayoutOutline = inflater.inflate(mParam.itemContainerLayoutRes, parent, false);
         ViewGroup vg = adLayoutOutline.findViewById(mParam.itemContainerId);
 
-        LinearLayout adLayoutContent = (LinearLayout) inflater
-                .inflate(R.layout.item_admob_native_ad, parent, false);
+        LinearLayout adLayoutContent = (LinearLayout) inflater.inflate(R.layout.item_admob_native_ad, parent, false);
         vg.addView(adLayoutContent);
         return new AdViewHolder(adLayoutOutline);
     }
@@ -196,28 +177,26 @@ public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
 
     public static class Builder {
         private final Param mParam;
+        private OnAdLoadListener adLoadListener; // Add this line
 
-        private Builder(Param param) {
+        public Builder(Param param) {
             mParam = param;
         }
 
-        public static Builder with(String placementId, RecyclerView.Adapter wrapped, String layout) {
+        public static Builder with(String        placementId, RecyclerView.Adapter wrapped, String layout) {
             Param param = new Param();
             param.admobNativeId = placementId;
             param.adapter = wrapped;
 
-
             if (layout.equalsIgnoreCase("small")) {
                 param.layout = 0;
             } else if (layout.equalsIgnoreCase("medium")) {
-
                 param.layout = 1;
             } else {
                 param.layout = 2;
-
             }
 
-            //default value
+            // Default value
             param.adItemInterval = DEFAULT_AD_ITEM_INTERVAL;
             param.itemContainerLayoutRes = R.layout.item_admob_native_ad_outline;
             param.itemContainerId = R.id.ad_container;
@@ -236,8 +215,17 @@ public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
             return this;
         }
 
+        public Builder adLoadListener(OnAdLoadListener adLoadListener) { // Add this method
+            this.adLoadListener = adLoadListener;
+            return this;
+        }
+
         public AdmobNativeAdAdapter build() {
-            return new AdmobNativeAdAdapter(mParam);
+            AdmobNativeAdAdapter adapter = new AdmobNativeAdAdapter(mParam);
+            if (adLoadListener != null) {
+                adapter.setAdLoadListener(adLoadListener); // Set the ad load listener if provided
+            }
+            return adapter;
         }
 
         public Builder enableSpanRow(GridLayoutManager layoutManager) {
@@ -256,11 +244,17 @@ public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
         }
     }
 
+    public interface OnAdLoadListener { // Add this interface
+        void onAdLoaded();
+        void onAdFailedToLoad();
+    }
+
     private static class AdViewHolder extends RecyclerView.ViewHolder {
 
         TemplateView templatesmall, templatemedium, templatecustom;
         LinearLayout adContainer;
         boolean loaded;
+        ProgressBar progressBar; // Add progress bar
 
         AdViewHolder(View view) {
             super(view);
@@ -269,6 +263,7 @@ public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
             templatemedium = view.findViewById(R.id.my_templatemedium);
             loaded = false;
             adContainer = view.findViewById(R.id.native_ad_container);
+            progressBar = view.findViewById(R.id.progress_bar); // Initialize progress bar
         }
 
         Context getContext() {
@@ -276,3 +271,4 @@ public class AdmobNativeAdAdapter extends RecyclerViewAdapterWrapper {
         }
     }
 }
+
